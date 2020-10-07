@@ -31,6 +31,10 @@ func (a *ClowderError) Error() string {
 	return a.Msg
 }
 
+func (a *ClowderError) StackError() string {
+	return fmt.Sprintf("%s\n%s", a.Error(), a.Stack.String)
+}
+
 func New(msg string) *ClowderError {
 	stackField := zap.String("stack", "")
 

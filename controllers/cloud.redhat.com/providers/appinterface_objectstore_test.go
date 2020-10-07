@@ -2,40 +2,36 @@ package providers
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/config"
-	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/utils"
+	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	core "k8s.io/api/core/v1"
 )
 
 type TestSecrets struct {
-	ExactKeys   map[string]string
-	ExtraKeys   map[string]string
-	NoKeys      map[string]string
-	MissingKeys map[string]string
+	Secrets      map[string]map[string]string
+	ValidSecrets []string
 }
 
-func (ts *TestSecrets) NewValidConfig(name string) map[string]string {
-	return map[string]string{
-		"aws_access_key_id":     ts.ExactKeys["aws_access_key_id"],
-		"aws_secret_access_key": ts.ExactKeys["aws_secret_access_key"],
-		"aws_region":            ts.ExactKeys["aws_region"],
-		"bucket":                name,
+func in(candidate string, items []string) bool {
+	for _, i := range items {
+		if i == candidate {
+			return true
+		}
 	}
+	return false
 }
 
-func (ts *TestSecrets) ToSecrets() []core.Secret {
-	theMaps := []map[string]string{
-		ts.ExactKeys,
-		ts.ExtraKeys,
-		ts.NoKeys,
-		ts.MissingKeys,
-	}
-
+func (ts *TestSecrets) ToSecrets(keys []string) []core.Secret {
 	secrets := []core.Secret{}
 
-	for _, secMap := range theMaps {
+	for k, secMap := range ts.Secrets {
+		if !in(k, keys) {
+			continue
+		}
+
 		bytemap := map[string][]byte{}
 
 		for k, v := range secMap {
@@ -50,37 +46,166 @@ func (ts *TestSecrets) ToSecrets() []core.Secret {
 	return secrets
 }
 
+func (ts *TestSecrets) GetExpectedConfig(names []string) *config.ObjectStoreConfig {
+	expected := config.ObjectStoreConfig{
+		Port:    443,
+		Buckets: []config.ObjectStoreBucket{},
+	}
+
+	for _, name := range names {
+		if ts.IsValid(name) {
+			secMap := ts.Secrets[name]
+			expected.Buckets = append(expected.Buckets, config.ObjectStoreBucket{
+				AccessKey: strPtr(secMap["aws_access_key_id"]),
+				SecretKey: strPtr(secMap["aws_secret_access_key"]),
+				Name:      secMap["bucket"],
+			})
+
+			if val, ok := secMap["endpoint"]; ok {
+				expected.Hostname = val
+			}
+		}
+	}
+
+	return &expected
+}
+
+func (ts *TestSecrets) IsValid(candidate string) bool {
+	for _, i := range ts.ValidSecrets {
+		if candidate == i {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (ts *TestSecrets) Permutations() []ObjTestParams {
+	keys := make([]string, len(ts.Secrets))
+	ki := 0
+
+	for k := range ts.Secrets {
+		keys[ki] = k
+		ki++
+	}
+
+	permCnt := exp(2, len(ts.Secrets))
+	params := make([]ObjTestParams, permCnt)
+
+	for i := 0; i < permCnt; i++ {
+		selectedKeys := []string{}
+
+		for j := 0; j < len(ts.Secrets); j++ {
+			if i&(1<<j) > 0 {
+				selectedKeys = append(selectedKeys, keys[j])
+			}
+		}
+
+		params[i] = ObjTestParams{
+			Keys:     selectedKeys,
+			Secrets:  ts.ToSecrets(selectedKeys),
+			Expected: ts.GetExpectedConfig(selectedKeys),
+		}
+	}
+
+	return params
+}
+
+type ObjTestParams struct {
+	Keys     []string
+	Secrets  []core.Secret
+	Expected *config.ObjectStoreConfig
+}
+
+func (o *ObjTestParams) ID() string {
+	return strings.Join(o.Keys, ":")
+}
+
+func (o *ObjTestParams) HasHostname() bool {
+	for _, secret := range o.Secrets {
+		for k := range secret.Data {
+			if k == "endpoint" {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func exp(base int, exp int) int {
+	val := 1
+
+	for i := 0; i < exp; i++ {
+		val = val * base
+	}
+
+	return val
+}
+
 func TestAppInterfaceObjectStore(t *testing.T) {
 	testSecretSpecs := TestSecrets{
-		ExactKeys: map[string]string{
-			"aws_access_key_id":     utils.RandString(12),
-			"aws_secret_access_key": utils.RandString(12),
-			"aws_region":            "us-east-1",
-			"bucket":                "test-bucket",
-			"endpoint":              "s3.us-east-1.aws.amazon.com",
+		Secrets: map[string]map[string]string{
+			"ExactKeys": {
+				"aws_access_key_id":     "ExactKeys-accessKey",
+				"aws_secret_access_key": "ExactKeys-secretKey",
+				"aws_region":            "us-east-1",
+				"bucket":                "test-bucket",
+				"endpoint":              "s3.us-east-1.aws.amazon.com",
+			},
+			"ExtraKeys": {
+				"aws_access_key_id":     "ExtraKeys-accessKey",
+				"aws_secret_access_key": "ExtraKeys-secretKey",
+				"aws_region":            "us-east-1",
+				"bucket":                "extra-bucket",
+				"endpoint":              "s3.us-east-1.aws.amazon.com",
+				"something":             "else",
+			},
+			"NoKeys": {},
+			"MissingEndpoint": {
+				"aws_access_key_id":     "MissingEndpoint-accessKey",
+				"aws_secret_access_key": "MissingEndpoint-secretKey",
+				"aws_region":            "us-east-1",
+				"bucket":                "test-bucket",
+			},
+			"MissingBucket": {
+				"aws_access_key_id":     "MissingBucket-accessKey",
+				"aws_secret_access_key": "MissingBucket-secretKey",
+				"aws_region":            "us-east-1",
+				"endpoint":              "s3.us-east-1.aws.amazon.com",
+			},
 		},
+		ValidSecrets: []string{"ExactKeys", "ExtraKeys", "MissingEndpoint"},
 	}
 
-	c, err := genObjStoreConfig(testSecretSpecs.ToSecrets())
+	for _, param := range testSecretSpecs.Permutations() {
+		t.Run(param.ID(), func(t *testing.T) {
+			c, err := genObjStoreConfig(param.Secrets)
 
-	if err != nil {
-		t.Errorf("Error calling genObjStoreConfig: %w", err)
-	}
+			if param.HasHostname() && err != nil {
+				t.Errorf("Error calling genObjStoreConfig: %s", err.(*errors.ClowderError).StackError())
+			}
 
-	expected := config.ObjectStoreConfig{
-		Port:     443,
-		Hostname: testSecretSpecs.ExactKeys["endpoint"],
-		Buckets: []config.ObjectStoreBucket{{
-			AccessKey: strPtr(testSecretSpecs.ExactKeys["aws_access_key_id"]),
-			SecretKey: strPtr(testSecretSpecs.ExactKeys["aws_secret_access_key"]),
-			Name:      testSecretSpecs.ExactKeys["bucket"],
-		}},
-	}
+			if len(param.Secrets) > 0 && !param.HasHostname() && err == nil {
+				t.Error("genObjStoreConfig should raise an error when hostname is not available")
+			}
 
-	equalsErr := objectStoreEquals(c, &expected)
+			if c != nil && len(c.Buckets) > 0 {
+				ptr := c.Buckets[0].AccessKey
+				if ptr != nil {
+					println(fmt.Sprintf("actual: %s", *ptr))
+				}
+				ptr = param.Expected.Buckets[0].AccessKey
+				if ptr != nil {
+					println(fmt.Sprintf("expected: %s", *ptr))
+				}
+			}
+			equalsErr := objectStoreEquals(c, param.Expected)
 
-	if equalsErr != "" {
-		t.Error(equalsErr)
+			if equalsErr != "" {
+				t.Error(equalsErr)
+			}
+		})
 	}
 }
 
