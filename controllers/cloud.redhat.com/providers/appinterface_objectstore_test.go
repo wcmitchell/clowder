@@ -138,6 +138,9 @@ func (o *ObjTestParams) ID() string {
 
 func (o *ObjTestParams) HasHostname() bool {
 	for _, secret := range o.Secrets {
+		if !in(string(secret.Data["bucket"]), o.Expected.BucketNames()) {
+			continue
+		}
 		for k := range secret.Data {
 			if k == "endpoint" {
 				return true
@@ -201,7 +204,17 @@ func TestAppInterfaceObjectStore(t *testing.T) {
 				t.Errorf("Error calling genObjStoreConfig: %s", err.(*errors.ClowderError).StackError())
 			}
 
-			if len(param.Secrets) > 0 && !param.HasHostname() && err == nil {
+			validKeys := []string{}
+			for _, k := range param.Keys {
+				for _, kk := range testSecretSpecs.ValidSecrets {
+					if k == kk {
+						validKeys = append(validKeys, k)
+						break
+					}
+				}
+			}
+
+			if len(validKeys) > 0 && !param.HasHostname() && err == nil {
 				t.Error("genObjStoreConfig should raise an error when hostname is not available")
 			}
 

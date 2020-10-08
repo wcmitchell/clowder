@@ -23,6 +23,16 @@ func (dbc *DatabaseConfig) Populate(data *map[string]string) {
 	dbc.Username = (*data)["username"]
 }
 
+func (obc *ObjectStoreConfig) BucketNames() []string {
+	buckets := []string{}
+
+	for _, b := range obc.Buckets {
+		buckets = append(buckets, b.Name)
+	}
+
+	return buckets
+}
+
 func MakeOrGetSecret(ctx context.Context, env *crd.ClowdEnvironment, client client.Client, nn types.NamespacedName, dataInit func() map[string]string) (*map[string]string, error) {
 	secret := &core.Secret{}
 	secretUpdate, err := utils.UpdateOrErr(client.Get(ctx, nn, secret))
