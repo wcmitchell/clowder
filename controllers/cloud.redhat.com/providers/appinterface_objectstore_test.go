@@ -2,6 +2,7 @@ package providers
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"testing"
 
@@ -9,6 +10,20 @@ import (
 	"cloud.redhat.com/clowder/v2/controllers/cloud.redhat.com/errors"
 	core "k8s.io/api/core/v1"
 )
+
+type ByName []config.ObjectStoreBucket
+
+func (b ByName) Len() int {
+	return len(b)
+}
+
+func (b ByName) Swap(i, j int) {
+	b[i], b[j] = b[j], b[i]
+}
+
+func (b ByName) Less(i, j int) bool {
+	return b[i].Name < b[j].Name
+}
 
 type TestSecrets struct {
 	Secrets      map[string]map[string]string
@@ -190,16 +205,6 @@ func TestAppInterfaceObjectStore(t *testing.T) {
 				t.Error("genObjStoreConfig should raise an error when hostname is not available")
 			}
 
-			if c != nil && len(c.Buckets) > 0 {
-				ptr := c.Buckets[0].AccessKey
-				if ptr != nil {
-					println(fmt.Sprintf("actual: %s", *ptr))
-				}
-				ptr = param.Expected.Buckets[0].AccessKey
-				if ptr != nil {
-					println(fmt.Sprintf("expected: %s", *ptr))
-				}
-			}
 			equalsErr := objectStoreEquals(c, param.Expected)
 
 			if equalsErr != "" {
@@ -225,6 +230,9 @@ func objectStoreEquals(actual *config.ObjectStoreConfig, expected *config.Object
 	if actualLen != expectedLen {
 		return fmt.Sprintf("Different number of buckets %d; expected %d", actualLen, expectedLen)
 	}
+
+	sort.Sort(ByName(actual.Buckets))
+	sort.Sort(ByName(expected.Buckets))
 
 	for i, bucket := range actual.Buckets {
 		expectedBucket := expected.Buckets[i]
