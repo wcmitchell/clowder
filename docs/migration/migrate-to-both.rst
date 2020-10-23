@@ -85,17 +85,31 @@ Develop ClowdApp resource for target service
     * List other app dependencies (e.g. RBAC)
 
 Add build_deploy.sh and pr_check.sh to source code repo
---------------------------------------------------------
+-------------------------------------------------------
 
-* build_deploy.sh should be cloned from example
-* Builds image using Dockerfile and pushes to quay with credentials provided in
-  Jenkins job environment
-* Push latest and qa tags for e2e-deploy backwards compatibility
-* Clone pr_check.sh from example and fill in bonfire variables
-* Both files live in the root folder of source code repo
+App SRE's build jobs largely rely on shell scripts in the target code repo to
+execute the build and tests, respectively.  There are two jobs for each app:
+"build master" and "PR check", and each job has a corrsponding shell script:
+build_deploy.sh and pr_check.sh.
 
-Create PR check and build_master jenkins jobs in app-interface
---------------------------------------------------------------
+build_deploy.sh builds an app's image using a Dockerfile and pushes to quay with
+credentials provided in Jenkins job environment.  Make sure to push the latest
+and qa image tags if e2e-deploy backwards compatibility is needed.  There is
+little variation in this file between projects, thus there are many examples to
+pull from.
+
+pr_check.sh is where an app's unit test, static code analysis, linting, and
+smoke/integration testing will be performed.  It is largely up to app owners
+what goes into this script.  Smoke/integration testing will be performed by
+bonfire, and there is an example script to paste into your app's script.  There
+are a few environment variables to plug in at the top for an app, and the rest
+of the script should be left untouched.
+
+Both files live in the root folder of source code repo, unless overridden in the
+Jenkins job definition (see below).
+
+Create "PR check" and "build master" jenkins jobs in app-interface
+------------------------------------------------------------------
 
 * Copy from template and fill in the blanks
 * Public github repos should use ci-ext
