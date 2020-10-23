@@ -73,16 +73,38 @@ compatible.  If not, changes to the app will need to be made.
 Develop ClowdApp resource for target service
 --------------------------------------------
 
-* Write migration script
-* All deployments from one code repo should map to one ClowdApp
-* Pod spec can be extracted from existing deployment
-* Additional information needed:
+Developing the ``ClowdApp`` resource largely consists of two parts: 
 
-    * List of kafka topics
-    * Optionally request a PostgreSQL database
-    * List of object store buckets
-    * Optionally request an in-memory database (i.e. Redis)
-    * List other app dependencies (e.g. RBAC)
+* Copying over the relevant parts of an app's current pod template into the
+  simplified pod spec
+* Filling out the new metadata in the rest of the ``ClowdApp`` spec.
+
+All deployments from one code repo should map to one ``ClowdApp``, each one
+mapping to an item in the ``pods`` spec.  For each ``Deployment``, extract the
+following from the app's deployment template in `saas-templates`_:
+
+* image spec
+* resource requirements
+* command arguments
+* environment variables
+* liveness and readiness probes
+* volumes and volume mounts.
+
+Additional information needed to fill out the other fields:
+
+* List of kafka topics
+* Optionally request a PostgreSQL database
+* List of object store buckets
+* Optionally request an in-memory database (i.e. Redis)
+* List other app dependencies (e.g. ``rbac``)
+
+The new ``ClowdApp`` can be validated on any cluster that has Clowder installed.
+If access to a cluster with Clowder is not available, Clowder can be `installed
+on Codeready Containers`_.
+
+.. _example: https://github.com/RedHatInsights/insights-puptoo/blob/fea32bef660802b0647f616bc211fb52f24a30e5/deployment.yaml
+.. _saas-templates: https://gitlab.cee.redhat.com/insights-platform/saas-templates/
+.. _installed on Codeready Containers: https://github.com/RedHatInsights/clowder/blob/master/docs/crc-guide.md
 
 Add build_deploy.sh and pr_check.sh to source code repo
 -------------------------------------------------------
