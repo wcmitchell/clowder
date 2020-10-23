@@ -44,7 +44,7 @@ configuration that comes from Clowder.
 
 Until a dev team is confident an app will not need to be deployed without
 Clowder, please use an environment variable to switch between consuming
-configuration from clowder and from its current configuration method (e.g. env
+configuration from Clowder and from its current configuration method (e.g. env
 vars, ConfigMap).
 
 Here are the items that you should consume from the Clowder client library:
@@ -61,7 +61,7 @@ There are a couple of less trivial changes that may need to be made, depending
 on what services are consumed by an app.
 
 If object storage, i.e. S3, is used by an app, it is recommended that an app
-switch to the Minio client library.  Minio is used in pre-production
+switch to the MinIO client library.  MinIO is used in pre-production
 environments, and it also supports interacting with S3.  Thus switching to this
 library will allow an app to have to include only one object storage client
 library.
@@ -89,7 +89,7 @@ Add build_deploy.sh and pr_check.sh to source code repo
 
 App SRE's build jobs largely rely on shell scripts in the target code repo to
 execute the build and tests, respectively.  There are two jobs for each app:
-"build master" and "PR check", and each job has a corrsponding shell script:
+"build master" and "PR check", and each job has a corresponding shell script:
 build_deploy.sh and pr_check.sh.
 
 build_deploy.sh builds an app's image using a Dockerfile and pushes to quay with
@@ -162,8 +162,16 @@ project must remain private, then its origin must move to gitlab.cee.redhat.com.
 Create deployment template with ClowdApp resource
 -------------------------------------------------
 
-* Standard parameter ENV_NAME
-* Simply copy in ClowdApp developed above
+Going forward, an app's deployment template must live in its source code repo.
+This will simply saas-deploy file configuration (see below) and has always been
+App SRE's convention.
+
+Additional resources defined in an app's current deployment template besides
+Deployment and Service should be copied over to the new template in the app's
+source code repo.  Then the ClowdApp developed above should be added in.
+
+A ClowdApp must point to a ClowdEnvironment resource via its ``envName`` spec
+attribute, and its value should be set as the ``ENV_NAME`` template parameter.
 
 Modify saas-deploy file for service
 -----------------------------------
