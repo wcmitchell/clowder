@@ -111,10 +111,53 @@ Jenkins job definition (see below).
 Create "PR check" and "build master" jenkins jobs in app-interface
 ------------------------------------------------------------------
 
-* Copy from template and fill in the blanks
-* Public github repos should use ci-ext
-* Private repos should live on gitlab and use ci-int
-* Private github repos are not supported
+Two Jenkins jobs need to be defined for each app in app-interface: one to build
+the image and one to run test validations against PRs.
+
+App SRE uses Jenkins Job Builder (JJB) to define jobs in YAML.  Jobs are created
+by referencing job templates and filling in template parameters.  There are two
+common patterns: one for github repos and another for gitlab repos.
+
+Github:
+
+.. code-block:: yaml
+
+    project:
+      name: puptoo-stage
+      label: insights
+      node: insights
+      gh_org: RedHatInsights
+      gh_repo: insights-puptoo
+      quay_org: cloudservices
+      jobs:
+      - "insights-gh-pr-check":
+          display_name: puptoo pr-check
+      - "insights-gh-build-master":
+          display_name: puptoo build-master
+
+Gitlab:
+
+.. code-block:: yaml
+
+    project:
+      name: insightsapp-poc-ci
+      label: insights
+      node: insights
+      gl_group: bsquizza
+      gl_project: insights-ingress-go
+      quay_org: cloudservices
+      jobs:
+      - 'insights-gl-pr-check':
+          display_name: 'insightsapp-poc pr-check'
+      - 'insights-gl-build-master':
+          display_name: 'insightsapp-poc build-master'
+
+
+In your app's build.yml, you need to specify on which Jenkins server to have
+your jobs defined.  App SRE provides two Jenkins servers: ci-int for projects
+hosted on gitlab.cee.redhat.com, and ci-ext for public projects hosted on
+Github.  Note that private Github projects are **not supported**; if a Github
+project must remain private, then its origin must move to gitlab.cee.redhat.com.
 
 Create deployment template with ClowdApp resource
 -------------------------------------------------
