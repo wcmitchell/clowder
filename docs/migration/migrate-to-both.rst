@@ -1,11 +1,30 @@
 Migrate to App-SRE Build Pipeline and Clowder
 =============================================
 
+Deployment and configuration of an app on cloud.redhat.com becomes much simpler
+after migrating to Clowder because a lot of operational decisions are made for
+the app, e.g. logging and kafka topic configuration. The migration involves some
+work, of course:  apps must ensure conformity to the conventions enforced by
+Clowder before they can be managed by it.
+
+This migration combines two migrations into one: 
+
+* Migrate build pipelines to app-interface
+* Migrate apps to Clowder
+
+Performing both migrations together reduces overall work, though you need to
+perform more steps before seeing results.
+
 Ensure code repo has a Dockerfile
 ---------------------------------
 
 App SRE's build conventions require that all images be built using a Dockerfile.  
-Note that a Dockerfile must not pull from Dockerhub.
+The Dockerfile can live anywhere in your code repo; you can configure a custom
+location in your build_deploy.sh (described later) if you place it somewhere
+besides the root folder.
+
+Note that a Dockerfile must not pull from Dockerhub.  App SRE blocks all
+requests to Dockerhub due to strict rate limiting imposed on their APIs.
 
 Code changes to consume configuration
 -------------------------------------
