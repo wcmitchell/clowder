@@ -108,7 +108,7 @@ of the script should be left untouched.
 Both files live in the root folder of source code repo, unless overridden in the
 Jenkins job definition (see below).
 
-Create "PR check" and "build master" jenkins jobs in app-interface
+Create "PR check" and "build master" Jenkins jobs in app-interface
 ------------------------------------------------------------------
 
 Two Jenkins jobs need to be defined for each app in app-interface: one to build
@@ -159,6 +159,15 @@ hosted on gitlab.cee.redhat.com, and ci-ext for public projects hosted on
 Github.  Note that private Github projects are **not supported**; if a Github
 project must remain private, then its origin must move to gitlab.cee.redhat.com.
 
+Disable builds in e2e-deploy
+----------------------------
+
+Once an app's build pipeline is set up through app-interface, the same build
+pipeline in e2e-deploy/buildfactory needs to be disabled.  To do this, open a PR
+against e2e-deploy that removes ``BuildConfig`` resources from the buildfactory
+folder.  Remember to push the ``qa`` and ``latest`` tags from your
+``build_deploy.sh`` script if you need backwards compatibility with e2e-deploy.
+
 Create deployment template with ClowdApp resource
 -------------------------------------------------
 
@@ -176,18 +185,39 @@ attribute, and its value should be set as the ``ENV_NAME`` template parameter.
 Modify saas-deploy file for service
 -----------------------------------
 
-* Github projects need to create a separate saas-deploy file because it needs
-  to point to ci-ext
-* Add ClowdApp as a resource type
-* Point resource template URL and path to deployment template in code repo
-* Remove IMAGE_TAG from all targets
-* Ensure ref is set to master for stage and a git SHA for production.
-* Add ephemeral target
+Once all the previous steps have been completed, it's time to deploy the
+Clowder-dependent app.  This can be a little tricky since we need to keep the
+current production app running smoothly until we are confident the new changes
+are ready to be promoted.
 
-Disable builds in e2e-deploy
-----------------------------
+It's likely best to create a separate saas-deploy file for Clowder-based
+services.  The current ``deploy.yml`` can be cloned, with the name appended with
+``-clowder`` and all the ``resourceTemplates`` removed.  Apps on Github need to
+refer to ``ci-ext`` Jenkins, while apps on Gitlab should reference ``ci-int``.
+If there are multiple services in one saas-deploy file which are not hosted by
+the same provider, then two separate saas-deploy files must be maintained since
+a saas-deploy file can only point to one Jenkins instance.
 
-* Remove BuildConfig resources from buildfactory folder.
-* Provide example PR
+Points to ensure are in place in your new saas-deploy file:
 
-.. vim: tw=80 spelllang=en
+* Add ``ClowdApp`` as a resource type
+* Point ``resourceTemplate`` ``url`` and ``path`` to the deployment template in
+  the app's code repo
+* Remove ``IMAGE_TAG`` from all targets.  This was only specified because the
+  deployment template was in a separate repo than the code.
+* Ensure ref is set to master for stage and a git SHA for production.  Note that
+  this means that all pushes to ``master`` will automatically be deployed to
+  stage (per App SRE convention).
+* Add an ephemeral target.  This will be used by Bonfire to know how to deploy
+  the app.  Example:
+
+.. code-block:: yaml
+
+    - namespace:
+        $ref: /services/insights/ephemeral/namespaces/ephemeral-base.yml
+      disable: true  # do not create an app-sre deploy job for ephemeral namespace
+      ref: internal  # populated by bonfire
+      parameters:
+        REPLICAS: 1
+
+.. vim: tw=80 spell spelllang=en
