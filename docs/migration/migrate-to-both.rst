@@ -29,15 +29,46 @@ requests to Dockerhub due to strict rate limiting imposed on their APIs.
 Code changes to consume configuration
 -------------------------------------
 
-* Use env var to switch between consuming configuration from clowder and from
-  current config method (e.g. env vars, ConfigMap)
-* Dependent service hostnames
-* Kafka bootstrap URL
-* Kafka topic names
+One of Clowder's key features is centralized configuration.  Instead of cobbling
+together an app's configuration from a disparate set of secrets, environment
+variables, and ConfigMaps that potentially change from environment to
+environment, Clowder combines much of an app's configuration into a single JSON
+document and mounts it in the app's container.  This should also insulate apps
+from differences between environments, e.g. production, ephemeral, and local
+development.
+
+There is a companion client library for Clowder, currently implemented in Go and
+Python, that consumes the configuration document mounted into every application
+container and exposes it via an API.  This API is the recommended way to consume
+configuration that comes from Clowder.
+
+Until a dev team is confident an app will not need to be deployed without
+Clowder, please use an environment variable to switch between consuming
+configuration from clowder and from its current configuration method (e.g. env
+vars, ConfigMap).
+
+Here are the items that you should consume from the Clowder client library:
+
+* Dependent service hostnames: Look these up by the app name
+* Kafka bootstrap URL: Multiple URLs can be provided, though only one is ever
+  present today
+* Kafka topic names: Please look up the actual topic name based on the requested
+  name.
 * Web prefix and port number
 * Metrics path and port number
-* Use minio as the only object storage client library
-* Redis
+
+There are a couple of less trivial changes that may need to be made, depending
+on what services are consumed by an app.
+
+If object storage, i.e. S3, is used by an app, it is recommended that an app
+switch to the Minio client library.  Minio is used in pre-production
+environments, and it also supports interacting with S3.  Thus switching to this
+library will allow an app to have to include only one object storage client
+library.
+
+Clowder can provision Redis on behalf of an app.  If an app uses Redis, we
+suggest testing with the version of Redis deployed by Clowder to ensure it is
+compatible.  If not, changes to the app will need to be made.
 
 Develop ClowdApp resource for target service
 --------------------------------------------
