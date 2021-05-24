@@ -153,7 +153,7 @@ endif
 
 # Generate bundle manifests and metadata, then validate generated files.
 .PHONY: bundle
-bundle: manifests bundle-verify
+bundle: kustomize manifests bundle-verify
 	$(RUNTIME) build -f bundle.Dockerfile -t $(BUNDLE_IMAGE):$(BUNDLE_IMAGE_TAG) .
 
 bundle-verify:
