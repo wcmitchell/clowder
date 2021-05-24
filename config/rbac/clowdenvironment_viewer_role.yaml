@@ -1,23 +1,19 @@
-# permissions for end users to edit clowdenvironments.
+# permissions for end users to view clowdenvironments.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: clowdenvironment-editor-role
+  name: clowdenvironment-viewer-role
 rules:
 - apiGroups:
-  - cloud.redhat.com
+  - cloud.redhat.com.cloud.redhat.com
   resources:
   - clowdenvironments
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
-  - cloud.redhat.com
+  - cloud.redhat.com.cloud.redhat.com
   resources:
   - clowdenvironments/status
   verbs:

@@ -179,7 +179,7 @@ func NewObjectCache(ctx context.Context, kclient client.Client, scheme *runtime.
 // before modifying the obejct they wish to be placed in the cache.
 func (o *ObjectCache) Create(resourceIdent ResourceIdent, nn types.NamespacedName, object runtime.Object) error {
 
-	update, err := utils.UpdateOrErr(o.client.Get(o.ctx, nn, object))
+	update, err := utils.UpdateOrErr(o.client.Get(o.ctx, nn, object.(client.Object)))
 
 	if err != nil {
 		return err
@@ -420,7 +420,7 @@ func (o *ObjectCache) ApplyAll() error {
 				return err
 			}
 			if i.Status {
-				if err := o.client.Status().Update(o.ctx, i.Object); err != nil {
+				if err := o.client.Status().Update(o.ctx, i.Object.(client.Object)); err != nil {
 					return err
 				}
 			}

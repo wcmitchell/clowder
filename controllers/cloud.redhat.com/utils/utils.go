@@ -65,7 +65,7 @@ func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Objec
 
 	if *u {
 		//Log.Info("Updating resource", "namespace", meta.GetNamespace(), "name", meta.GetName(), "kind", kind)
-		err = cl.Update(ctx, obj)
+		err = cl.Update(ctx, obj.(client.Object))
 	} else {
 		if meta.GetName() == "" {
 			Log.Info("Skipping resource as name unknown", "kind", kind)
@@ -73,7 +73,7 @@ func (u *Updater) Apply(ctx context.Context, cl client.Client, obj runtime.Objec
 		}
 
 		//Log.Info("Creating resource", "namespace", meta.GetNamespace(), "name", meta.GetName(), "kind", kind)
-		err = cl.Create(ctx, obj)
+		err = cl.Create(ctx, obj.(client.Object))
 	}
 
 	if err != nil {
@@ -105,7 +105,7 @@ func UpdateAllOrErr(ctx context.Context, cl client.Client, nn types.NamespacedNa
 	updates := map[runtime.Object]Updater{}
 
 	for _, resource := range obj {
-		update, err := UpdateOrErr(cl.Get(ctx, nn, resource))
+		update, err := UpdateOrErr(cl.Get(ctx, nn, resource.(client.Object)))
 
 		if err != nil {
 			return updates, err

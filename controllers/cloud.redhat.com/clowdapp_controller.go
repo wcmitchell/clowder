@@ -25,7 +25,6 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -95,10 +94,10 @@ type ClowdAppReconciler struct {
 // +kubebuilder:rbac:groups=monitoring.coreos.com,resources=prometheuses;servicemonitors,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile fn
-func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	qualifiedName := fmt.Sprintf("%s:%s", req.Namespace, req.Name)
 	log := r.Log.WithValues("app", qualifiedName).WithValues("id", utils.RandString(5))
-	ctx := context.WithValue(context.Background(), errors.ClowdKey("log"), &log)
+	ctx = context.WithValue(ctx, errors.ClowdKey("log"), &log)
 	ctx = context.WithValue(ctx, errors.ClowdKey("recorder"), &r.Recorder)
 	app := crd.ClowdApp{}
 	err := r.Client.Get(ctx, req.NamespacedName, &app)
@@ -229,16 +228,16 @@ func (r *ClowdAppReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{Requeue: requeue}, nil
 }
 
-func isOurs(meta metav1.Object, gvk schema.GroupVersionKind) bool {
+func isOurs(o client.Object, gvk schema.GroupVersionKind) bool {
 	if gvk.Kind == "ClowdEnvironment" {
 		return true
 	} else if gvk.Kind == "ClowdApp" {
 		return true
-	} else if len(meta.GetOwnerReferences()) == 0 {
+	} else if len(o.GetOwnerReferences()) == 0 {
 		return false
-	} else if meta.GetOwnerReferences()[0].Kind == "ClowdApp" {
+	} else if o.GetOwnerReferences()[0].Kind == "ClowdApp" {
 		return true
-	} else if meta.GetOwnerReferences()[0].Kind == "ClowdEnvironment" {
+	} else if o.GetOwnerReferences()[0].Kind == "ClowdEnvironment" {
 		return true
 	}
 	return false
@@ -248,23 +247,23 @@ func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Pr
 	return predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
 			gvk, _ := getKindFromObj(scheme, e.Object)
-			if !isOurs(e.Meta, gvk) {
+			if !isOurs(e.Object, gvk) {
 				return false
 			}
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "create", "resType", gvk.Kind, "name", e.Meta.GetName(), "namespace", e.Meta.GetNamespace())
+			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "create", "resType", gvk.Kind, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			gvk, _ := getKindFromObj(scheme, e.ObjectNew)
-			if !isOurs(e.MetaNew, gvk) {
+			if !isOurs(e.ObjectNew, gvk) {
 				return false
 			}
 
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.MetaOld.GetName(), "namespace", e.MetaOld.GetNamespace())
+			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
 
 			if clowder_config.LoadedConfig.DebugOptions.Trigger.Diff {
 				if e.ObjectNew.GetObjectKind().GroupVersionKind() == secretCompare {
-					logr.Info("Trigger diff", "diff", "hidden", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.MetaOld.GetName(), "namespace", e.MetaOld.GetNamespace())
+					logr.Info("Trigger diff", "diff", "hidden", "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
 				} else {
 					oldObjJSON, _ := json.MarshalIndent(e.ObjectOld, "", "  ")
 					newObjJSON, _ := json.MarshalIndent(e.ObjectNew, "", "  ")
@@ -277,7 +276,7 @@ func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Pr
 						Context:  3,
 					}
 					text, _ := difflib.GetUnifiedDiffString(diff)
-					logr.Info("Trigger diff", "diff", text, "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.MetaOld.GetName(), "namespace", e.MetaOld.GetNamespace())
+					logr.Info("Trigger diff", "diff", text, "ctrl", ctrlName, "type", "update", "resType", gvk.Kind, "name", e.ObjectOld.GetName(), "namespace", e.ObjectOld.GetNamespace())
 				}
 			}
 
@@ -305,22 +304,22 @@ func ignoreStatusUpdatePredicate(logr logr.Logger, ctrlName string) predicate.Pr
 			}
 
 			// Ignore updates to CR status in which case metadata.Generation does not change
-			return e.MetaOld.GetGeneration() != e.MetaNew.GetGeneration()
+			return e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration()
 		},
 		DeleteFunc: func(e event.DeleteEvent) bool {
 			gvk, _ := getKindFromObj(scheme, e.Object)
-			if !isOurs(e.Meta, gvk) {
+			if !isOurs(e.Object, gvk) {
 				return false
 			}
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "delete", "resType", gvk, "name", e.Meta.GetName(), "namespace", e.Meta.GetNamespace())
+			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "delete", "resType", gvk, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
 			return true
 		},
 		GenericFunc: func(e event.GenericEvent) bool {
 			gvk, _ := getKindFromObj(scheme, e.Object)
-			if !isOurs(e.Meta, gvk) {
+			if !isOurs(e.Object, gvk) {
 				return false
 			}
-			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "generic", "resType", gvk, "name", e.Meta.GetName(), "namespace", e.Meta.GetNamespace())
+			logr.Info("Reconciliation trigger", "ctrl", ctrlName, "type", "generic", "resType", gvk, "name", e.Object.GetName(), "namespace", e.Object.GetNamespace())
 			return true
 		},
 	}
@@ -335,7 +334,7 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	cache := mgr.GetCache()
 
 	cache.IndexField(
-		context.TODO(), &crd.ClowdApp{}, "spec.envName", func(o runtime.Object) []string {
+		context.TODO(), &crd.ClowdApp{}, "spec.envName", func(o client.Object) []string {
 			return []string{o.(*crd.ClowdApp).Spec.EnvName}
 		})
 
@@ -343,8 +342,7 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&crd.ClowdApp{}).
 		Watches(
 			&source.Kind{Type: &crd.ClowdEnvironment{}},
-			&handler.EnqueueRequestsFromMapFunc{
-				ToRequests: handler.ToRequestsFunc(r.appsToEnqueueUponEnvUpdate)},
+			handler.EnqueueRequestsFromMapFunc(r.appsToEnqueueUponEnvUpdate),
 		).
 		Owns(&apps.Deployment{}).
 		Owns(&core.Service{}).
@@ -353,12 +351,12 @@ func (r *ClowdAppReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(a handler.MapObject) []reconcile.Request {
+func (r *ClowdAppReconciler) appsToEnqueueUponEnvUpdate(a client.Object) []reconcile.Request {
 	reqs := []reconcile.Request{}
 	ctx := context.Background()
 	obj := types.NamespacedName{
-		Name:      a.Meta.GetName(),
-		Namespace: a.Meta.GetNamespace(),
+		Name:      a.GetName(),
+		Namespace: a.GetNamespace(),
 	}
 
 	// Get the ClowdEnvironment resource
