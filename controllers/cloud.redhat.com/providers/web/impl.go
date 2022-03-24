@@ -151,7 +151,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 			Value: "true",
 		},
 		{
-			Name: "KEYCLOAK_USER",
+			Name: "KEYCLOAK_ADMIN",
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
@@ -162,7 +162,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 			},
 		},
 		{
-			Name: "KEYCLOAK_PASSWORD",
+			Name: "KEYCLOAK_ADMIN_PASSWORD",
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
@@ -208,7 +208,7 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		FailureThreshold:    3,
 	}
 
-	image := "quay.io/keycloak/keycloak:11.0.3"
+	image := "quay.io/keycloak/keycloak:17.0.1"
 
 	if clowderconfig.LoadedConfig.Images.Keycloak != "" {
 		image = clowderconfig.LoadedConfig.Images.Keycloak
@@ -219,12 +219,13 @@ func makeKeycloak(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, no
 		Image:          image,
 		Env:            envVars,
 		Ports:          ports,
+		Args:           []string{"start-dev"},
 		LivenessProbe:  &livenessProbe,
 		ReadinessProbe: &readinessProbe,
 		Resources: core.ResourceRequirements{
 			Limits: core.ResourceList{
 				"memory": resource.MustParse("750Mi"),
-				"cpu":    resource.MustParse("1"),
+				"cpu":    resource.MustParse("1.5"),
 			},
 			Requests: core.ResourceList{
 				"memory": resource.MustParse("400Mi"),
@@ -328,7 +329,7 @@ func makeBOP(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bool, nodePor
 		TimeoutSeconds:      2,
 	}
 
-	image := "quay.io/cloudservices/mbop:7ca0c5e"
+	image := "quay.io/cloudservices/mbop:49fc6d8"
 
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		image = clowderconfig.LoadedConfig.Images.MBOP
@@ -457,7 +458,7 @@ func makeMocktitlements(o obj.ClowdObject, objMap providers.ObjectMap, usePVC bo
 		TimeoutSeconds:      2,
 	}
 
-	image := "quay.io/cloudservices/mocktitlements:814df48"
+	image := "quay.io/cloudservices/mocktitlements:8511fbe"
 
 	if clowderconfig.LoadedConfig.Images.MBOP != "" {
 		image = clowderconfig.LoadedConfig.Images.MBOP
