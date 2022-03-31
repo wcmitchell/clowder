@@ -155,7 +155,7 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 	}
 
-	if ReadEnv() == app.Spec.EnvName {
+	if ReadEnv(&envMutex, &envCurrentEnv) == app.Spec.EnvName {
 		r.Recorder.Eventf(&app, "Warning", "ClowdEnvLocked", "Clowder Environment [%s] is locked", app.Spec.EnvName)
 		log.Info("Env currently being reconciled")
 		return ctrl.Result{Requeue: true}, nil
@@ -240,6 +240,8 @@ func (r *ClowdAppReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		Log:    log,
 	}
 
+	SetEnv(env.Name, &appMutex, &appCurrentEnv)
+	defer ReleaseEnv(&appMutex, &appCurrentEnv)
 	if provErr := r.runProviders(log, &provider, &app); provErr != nil {
 		r.Recorder.Eventf(&app, "Warning", "FailedReconciliation", "Clowdapp requeued [%s]", app.GetClowdName())
 		if setClowdStatusErr := SetClowdAppConditions(ctx, r.Client, &app, crd.ReconciliationFailed, provErr); setClowdStatusErr != nil {
