@@ -13,7 +13,6 @@ import (
 
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
-	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
@@ -53,7 +52,8 @@ func TestLocalDBPVC(t *testing.T) {
 	nn, app := getBaseElements()
 
 	pvc := core.PersistentVolumeClaim{}
-	provutils.MakeLocalDBPVC(&pvc, nn, &app, providers.GetDBDefaultVolSize())
+	volSize := p.GetDBDefaultVolSize()
+	provutils.MakeLocalDBPVC(&pvc, nn, &app, volSize)
 
 	if pvc.Name != nn.Name {
 		t.Fatalf("Name %v did not match expected %v", pvc.Name, nn.Name)
