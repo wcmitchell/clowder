@@ -23,12 +23,31 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
-const (
-	DB_DEFAULT = "1Gi"
-	DB_SMALL   = "2Gi"
-	DB_MEDIUM  = "3Gi"
-	DB_LARGE   = "5Gi"
-)
+func GetDBVolSizes() map[string]string {
+	return map[string]string{
+		"":       "1Gi",
+		"small":  "2Gi",
+		"medium": "3Gi",
+		"large":  "5Gi",
+	}
+}
+func GetDBCPUSizes() map[string]string {
+	return map[string]string{
+		"small":  "600M",
+		"medium": "1200M",
+		"large":  "2400M",
+	}
+}
+func GetDBRAMSizes() map[string]string {
+	return map[string]string{
+		"small":  "1024Mi",
+		"medium": "2048Mi",
+		"large":  "4096Mi",
+	}
+}
+func GetDBDefaultVolSize() string {
+	return GetDBVolSizes()[""]
+}
 
 type providerAccessor struct {
 	SetupProvider func(c *Provider) (ClowderProvider, error)

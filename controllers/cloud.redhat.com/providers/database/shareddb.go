@@ -150,7 +150,9 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 			return nil, err
 		}
 
-		largestDB := providers.DB_DEFAULT
+		largestDB := providers.GetDBDefaultVolSize()
+		volSizes := providers.GetDBVolSizes()
+
 		appList, err := p.Env.GetAppsInEnv(p.Ctx, p.Client)
 		if err != nil {
 			return nil, err
@@ -165,15 +167,15 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 			dbSize := app.Spec.Database.DBVolumeSize
 			switch dbSize {
 			case "small":
-				if largestDB != providers.DB_MEDIUM && largestDB != providers.DB_LARGE {
-					largestDB = providers.DB_SMALL
+				if largestDB != volSizes["medium"] && largestDB != volSizes["large"] {
+					largestDB = volSizes["small"]
 				}
 			case "medium":
-				if largestDB != providers.DB_LARGE {
-					largestDB = providers.DB_MEDIUM
+				if largestDB != volSizes["large"] {
+					largestDB = volSizes["medium"]
 				}
 			case "large":
-				largestDB = providers.DB_LARGE
+				largestDB = volSizes["large"]
 			}
 		}
 

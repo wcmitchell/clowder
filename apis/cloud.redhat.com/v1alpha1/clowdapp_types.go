@@ -55,14 +55,6 @@ type InitContainer struct {
 	Env []v1.EnvVar `json:"env,omitempty"`
 }
 
-// VolumeSize defines the size for the db, one of 'small', 'medium' or 'large' => [2, 3, and 5 GB respectively]
-// +kubebuilder:validation:Enum={"small", "medium", "large"}
-type VolumeSize string
-
-// ResourceSize defines the size for CPU & RAM via buckets: 'small', 'medium' or 'large'
-// +kubebuilder:validation:Enum={"small", "medium", "large"}
-type ResourceSize string
-
 // DatabaseSpec is a struct defining a database to be exposed to a ClowdApp.
 type DatabaseSpec struct {
 	// Defines the Version of the PostGreSQL database, defaults to 12.
@@ -78,10 +70,12 @@ type DatabaseSpec struct {
 	SharedDBAppName string `json:"sharedDbAppName,omitempty"`
 
 	// T-shirt size, one of small, medium, large
-	DBVolumeSize VolumeSize `json:"dbVolumeSize,omitempty"`
+	// +kubebuilder:validation:Enum={"small", "medium", "large"}
+	DBVolumeSize string `json:"dbVolumeSize,omitempty"`
 
 	// T-shirt size, one of small, medium, large
-	DBResourceSize ResourceSize `json:"dbResourceSize,omitempty"`
+	// +kubebuilder:validation:Enum={"small", "medium", "large"}
+	DBResourceSize string `json:"dbResourceSize,omitempty"`
 }
 
 // Job defines a ClowdJob
