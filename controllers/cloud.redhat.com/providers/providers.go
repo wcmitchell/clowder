@@ -16,6 +16,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -66,7 +67,18 @@ func GetDBDefaultVolSize() string {
 }
 
 func GetDBDefaultResourceRequirements() core.ResourceRequirements {
-	return core.ResourceRequirements{}
+	cpu := GetDBCPUSizes()
+	ram := GetDBRAMSizes()
+	return core.ResourceRequirements{
+		Limits: core.ResourceList{
+			"memory": resource.MustParse(ram["medium"]),
+			"cpu":    resource.MustParse(cpu["medium"]),
+		},
+		Requests: core.ResourceList{
+			"memory": resource.MustParse(ram["small"]),
+			"cpu":    resource.MustParse(cpu["small"]),
+		},
+	}
 }
 
 type providerAccessor struct {

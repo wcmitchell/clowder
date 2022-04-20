@@ -9,7 +9,6 @@ import (
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -114,16 +113,7 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 	if res != nil {
 		requestResource = *res
 	} else {
-		requestResource = core.ResourceRequirements{
-			Limits: core.ResourceList{
-				"memory": resource.MustParse("1Gi"),
-				"cpu":    resource.MustParse("1200m"),
-			},
-			Requests: core.ResourceList{
-				"memory": resource.MustParse("512Mi"),
-				"cpu":    resource.MustParse("600m"),
-			},
-		}
+		requestResource = providers.GetDBDefaultResourceRequirements()
 	}
 
 	c := core.Container{
