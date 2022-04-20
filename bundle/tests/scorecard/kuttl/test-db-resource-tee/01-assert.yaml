@@ -1,0 +1,29 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-a-db
+  namespace: test-db-resource-tee
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/cloudservices/postgresql-rds:12-9ee2984
+          resources:
+            limits:
+              cpu: 2400M
+              memory: 4096Mi
+            requests:
+              cpu: 1200M
+              memory: 2048Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-a-db
+  namespace: test-db-resource-tee
+spec:
+  template:
+    spec:
+      containers:
+        - image: quay.io/cloudservices/postgresql-rds:12-9ee2984
