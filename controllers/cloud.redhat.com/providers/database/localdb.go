@@ -46,7 +46,7 @@ func getDatabaseResourceSizesForApp(app *crd.ClowdApp) core.ResourceRequirements
 	if size == "" {
 		size = "small"
 	}
-	return providers.GetDBDResourceRequirements(size)
+	return providers.GetDBResourceRequirements(size)
 }
 
 // CreateDatabase ensures a database is created for the given app.  The

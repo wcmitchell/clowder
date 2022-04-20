@@ -80,11 +80,11 @@ func GetDBDefaultVolSize() string {
 
 func GetDBDefaultResourceRequirements() core.ResourceRequirements {
 	defaultSize := "small"
-	return GetDBDResourceRequirements(defaultSize)
+	return GetDBResourceRequirements(defaultSize)
 }
 
 //Get the default database resource requirements
-func GetDBDResourceRequirements(tShirtSize string) core.ResourceRequirements {
+func GetDBResourceRequirements(tShirtSize string) core.ResourceRequirements {
 	cpu := GetDBCPUSizes()
 	ram := GetDBRAMSizes()
 	limitSize := GetLimitForRequestSize(tShirtSize)
