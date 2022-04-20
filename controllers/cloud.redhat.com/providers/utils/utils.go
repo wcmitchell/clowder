@@ -110,10 +110,11 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 
 	var requestResource core.ResourceRequirements
 
-	if res != nil {
-		requestResource = *res
-	} else {
+	if res == nil {
 		requestResource = providers.GetDBDefaultResourceRequirements()
+
+	} else {
+		requestResource = *res
 	}
 
 	c := core.Container{

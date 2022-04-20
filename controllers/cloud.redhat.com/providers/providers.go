@@ -24,6 +24,17 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
+//For any given size get the next size up
+//Allows for size to limit mapping without conditionality
+func GetLimitForRequestSize(tShirtSize string) string {
+	sizeMap := map[string]string{
+		"small":  "medium",
+		"medium": "large",
+		"large":  "x-large",
+	}
+	return sizeMap[tShirtSize]
+}
+
 //Get a map of DB volume T-Shirt sizes
 func GetDBVolSizes() map[string]string {
 	return map[string]string{
@@ -62,21 +73,29 @@ func GetDBRAMSizes() map[string]string {
 	}
 }
 
+//Get the default volume size, for use if none is provided
 func GetDBDefaultVolSize() string {
 	return GetDBVolSizes()[""]
 }
 
 func GetDBDefaultResourceRequirements() core.ResourceRequirements {
+	defaultSize := "small"
+	return GetDBDResourceRequirements(defaultSize)
+}
+
+//Get the default database resource requirements
+func GetDBDResourceRequirements(tShirtSize string) core.ResourceRequirements {
 	cpu := GetDBCPUSizes()
 	ram := GetDBRAMSizes()
+	limitSize := GetLimitForRequestSize(tShirtSize)
 	return core.ResourceRequirements{
 		Limits: core.ResourceList{
-			"memory": resource.MustParse(ram["medium"]),
-			"cpu":    resource.MustParse(cpu["medium"]),
+			"memory": resource.MustParse(ram[limitSize]),
+			"cpu":    resource.MustParse(cpu[limitSize]),
 		},
 		Requests: core.ResourceList{
-			"memory": resource.MustParse(ram["small"]),
-			"cpu":    resource.MustParse(cpu["small"]),
+			"memory": resource.MustParse(ram[tShirtSize]),
+			"cpu":    resource.MustParse(cpu[tShirtSize]),
 		},
 	}
 }

@@ -40,6 +40,15 @@ func NewLocalDBProvider(p *providers.Provider) (providers.ClowderProvider, error
 	return &localDbProvider{Provider: *p}, nil
 }
 
+//Given an app return the ResourceRequirements struct for the database resource
+func getDatabaseResourceSizesForApp(app *crd.ClowdApp) core.ResourceRequirements {
+	size := app.Spec.Database.DBResourceSize
+	if size == "" {
+		size = "small"
+	}
+	return providers.GetDBDResourceRequirements(size)
+}
+
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
 func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
@@ -105,8 +114,10 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		image = imgComponents[0] + ":" + tag
 	}
 
+	resources := getDatabaseResourceSizesForApp(app)
+
 	labels := &map[string]string{"sub": "local_db"}
-	provutils.MakeLocalDB(dd, nn, app, labels, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name, nil)
+	provutils.MakeLocalDB(dd, nn, app, labels, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name, &resources)
 
 	if err = db.Cache.Update(LocalDBDeployment, dd); err != nil {
 		return err
