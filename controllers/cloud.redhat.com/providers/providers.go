@@ -23,30 +23,50 @@ import (
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
 
+//Get a map of DB volume T-Shirt sizes
 func GetDBVolSizes() map[string]string {
 	return map[string]string{
+		//Empty key? Why?! This is here to provide back compat with the prior
+		//implementation, which was "if no key is provided default to a size smaller than small"
+		//Yeah ok but why still use empty? It allows us to reduce conditionality
+		//instead of the go equiv of `key = key == "" ? "default" : key` we just allow key of ""
 		"":       "1Gi",
 		"small":  "2Gi",
 		"medium": "3Gi",
 		"large":  "5Gi",
 	}
 }
+
+//Get a map of DB CPU T-Shirt sizes
 func GetDBCPUSizes() map[string]string {
 	return map[string]string{
 		"small":  "600M",
 		"medium": "1200M",
 		"large":  "2400M",
+		//Uh, what? I though we only shipped small, medium, or large?
+		//Yeah but for resources we need to provide a request and a limit
+		//Limit is always the next size up, which means limit for large
+		//requires an x-large
+		"x-large": "3200M",
 	}
 }
+
+//Get a map of DB RAM T-Shirt sizes
 func GetDBRAMSizes() map[string]string {
 	return map[string]string{
-		"small":  "1024Mi",
-		"medium": "2048Mi",
-		"large":  "4096Mi",
+		"small":   "1024Mi",
+		"medium":  "2048Mi",
+		"large":   "4096Mi",
+		"x-large": "6144Mi",
 	}
 }
+
 func GetDBDefaultVolSize() string {
 	return GetDBVolSizes()[""]
+}
+
+func GetDBDefaultResourceRequirements() core.ResourceRequirements {
+	return core.ResourceRequirements{}
 }
 
 type providerAccessor struct {
