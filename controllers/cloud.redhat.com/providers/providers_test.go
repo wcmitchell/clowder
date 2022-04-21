@@ -25,16 +25,16 @@ func TestGetDBCPUSizes(t *testing.T) {
 	c := GetDBCPUSizes()
 	assert.Equal(t, c["small"], "600M")
 	assert.Equal(t, c["medium"], "1200M")
-	assert.Equal(t, c["large"], "2400M")
-	assert.Equal(t, c["x-large"], "3200M")
+	assert.Equal(t, c["large"], "1800M")
+	assert.Equal(t, c["x-large"], "2400M")
 }
 
 func TestGetDBRAMSizes(t *testing.T) {
 	r := GetDBRAMSizes()
-	assert.Equal(t, r["small"], "1024Mi")
-	assert.Equal(t, r["medium"], "2048Mi")
-	assert.Equal(t, r["large"], "4096Mi")
-	assert.Equal(t, r["x-large"], "6144Mi")
+	assert.Equal(t, r["small"], "512Mi")
+	assert.Equal(t, r["medium"], "1Gi")
+	assert.Equal(t, r["large"], "2Gi")
+	assert.Equal(t, r["x-large"], "3Gi")
 }
 
 func TestGetDBDefaultResourceRequirements(t *testing.T) {

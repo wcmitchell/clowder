@@ -54,22 +54,22 @@ func GetDBCPUSizes() map[string]string {
 	return map[string]string{
 		"small":  "600M",
 		"medium": "1200M",
-		"large":  "2400M",
+		"large":  "1800M",
 		//Uh, what? I though we only shipped small, medium, or large?
 		//Yeah but for resources we need to provide a request and a limit
 		//Limit is always the next size up, which means limit for large
 		//requires an x-large
-		"x-large": "3200M",
+		"x-large": "2400M",
 	}
 }
 
 //Get a map of DB RAM T-Shirt sizes
 func GetDBRAMSizes() map[string]string {
 	return map[string]string{
-		"small":   "1024Mi",
-		"medium":  "2048Mi",
-		"large":   "4096Mi",
-		"x-large": "6144Mi",
+		"small":   "512Mi",
+		"medium":  "1Gi",
+		"large":   "2Gi",
+		"x-large": "3Gi",
 	}
 }
 

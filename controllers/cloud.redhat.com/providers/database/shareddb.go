@@ -165,6 +165,9 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 				continue
 			}
 			dbSize := app.Spec.Database.DBVolumeSize
+			if dbSize == "" {
+				dbSize = "small"
+			}
 			switch dbSize {
 			case "small":
 				if largestDB != volSizes["medium"] && largestDB != volSizes["large"] {
