@@ -11,11 +11,11 @@ spec:
         - image: quay.io/cloudservices/postgresql-rds:12-9ee2984
           resources:
             limits:
-              cpu: 2400M
-              memory: 4Gi
-            requests:
-              cpu: 1200M
+              cpu: 1800m
               memory: 2Gi
+            requests:
+              cpu: 1200m
+              memory: 1Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
