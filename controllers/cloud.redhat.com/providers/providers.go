@@ -52,14 +52,14 @@ func GetDBVolSizes() map[string]string {
 //Get a map of DB CPU T-Shirt sizes
 func GetDBCPUSizes() map[string]string {
 	return map[string]string{
-		"small":  "600M",
-		"medium": "1200M",
-		"large":  "1800M",
+		"small":  "600m",
+		"medium": "1200m",
+		"large":  "1800m",
 		//Uh, what? I though we only shipped small, medium, or large?
 		//Yeah but for resources we need to provide a request and a limit
 		//Limit is always the next size up, which means limit for large
 		//requires an x-large
-		"x-large": "2400M",
+		"x-large": "2400m",
 	}
 }
 
