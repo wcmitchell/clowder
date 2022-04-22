@@ -81,8 +81,8 @@ func GetVolCapacityForSize(size string) string {
 	return getVolSizeToCapacityMap()[requestSize]
 }
 
-//Sometimes we need to know if one size is larger than another
-func IsCapacityLarger(capacityA string, capacityB string) bool {
+//Accepts 2 sizes. Returns true if first size is larger than second
+func IsSizeLarger(capacityA string, capacityB string) bool {
 	capacities := map[string]int{
 		XSMALL: 0,
 		SMALL:  1,

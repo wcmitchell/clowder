@@ -171,7 +171,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 				dbSize = defaultVolSize
 			}
 
-			if sizing.IsCapacityLarger(dbSize, largestDBVolSize) {
+			if sizing.IsSizeLarger(dbSize, largestDBVolSize) {
 				largestDBVolSize = dbSize
 			}
 
