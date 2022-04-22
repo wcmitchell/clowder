@@ -74,8 +74,7 @@ func GetResourceRequirementsForSize(tShirtSize string) core.ResourceRequirements
 	}
 }
 
-//For a givin vol size get the capacity
-//If "" is provided you'll get DEFAULT_SIZE_VOL
+//For a givin vol size get the capacity. Providing "" gets the default.
 func GetVolCapacityForSize(size string) string {
 	requestSize := useDefaultIfEmptySize(size, GetDefaultSizeVol())
 	return getVolSizeToCapacityMap()[requestSize]
