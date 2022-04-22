@@ -36,6 +36,7 @@ const (
 
 // Public methods
 
+//Get default resource requirement requests and limits
 func GetDefaultResourceRequirements() core.ResourceRequirements {
 	return GetResourceRequirementsForSize(GetDefaultSizeCPURAM())
 }
@@ -50,12 +51,12 @@ func GetDefaultSizeVol() string {
 	return DEFAULT_SIZE_VOL
 }
 
-//Get the default volume size, for use if none is provided
+//Get the default volume capacity
 func GetDefaultVolCapacity() string {
 	return getVolSizeToCapacityMap()[GetDefaultSizeVol()]
 }
 
-//Get the default database resource requirements
+//Get resource requirements - request and limits - for a given size
 func GetResourceRequirementsForSize(tShirtSize string) core.ResourceRequirements {
 	requestSize := useDefaultIfEmptySize(tShirtSize, GetDefaultSizeCPURAM())
 	cpu := getCPUSizeToCapacityMap()

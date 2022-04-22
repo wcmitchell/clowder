@@ -41,15 +41,6 @@ func NewLocalDBProvider(p *providers.Provider) (providers.ClowderProvider, error
 	return &localDbProvider{Provider: *p}, nil
 }
 
-//Given an app return the ResourceRequirements struct for the database resource
-func getDatabaseResourceSizesForApp(app *crd.ClowdApp) core.ResourceRequirements {
-	size := app.Spec.Database.DBResourceSize
-	if size == "" {
-		size = "small"
-	}
-	return sizing.GetResourceRequirementsForSize(size)
-}
-
 // CreateDatabase ensures a database is created for the given app.  The
 // namespaced name passed in must be the actual name of the db resources
 func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error {
@@ -115,7 +106,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 		image = imgComponents[0] + ":" + tag
 	}
 
-	resources := getDatabaseResourceSizesForApp(app)
+	resources := sizing.GetResourceRequirementsForSize(app.Spec.Database.DBResourceSize)
 
 	labels := &map[string]string{"sub": "local_db"}
 	provutils.MakeLocalDB(dd, nn, app, labels, &dbCfg, image, db.Env.Spec.Providers.Database.PVC, app.Spec.Database.Name, &resources)
@@ -141,9 +132,9 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 			return err
 		}
 
-		volSize := sizing.GetVolCapacityForSize(app.Spec.Database.DBVolumeSize)
+		volCapacity := sizing.GetVolCapacityForSize(app.Spec.Database.DBVolumeSize)
 
-		provutils.MakeLocalDBPVC(pvc, nn, app, volSize)
+		provutils.MakeLocalDBPVC(pvc, nn, app, volCapacity)
 
 		if err = db.Cache.Update(LocalDBPVC, pvc); err != nil {
 			return err
