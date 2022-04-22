@@ -8,13 +8,13 @@ import (
 )
 
 func TestGetLimitSizeForRequestSize(t *testing.T) {
-	assert.Equal(t, GetLimitSizeForRequestSize("small"), "medium")
-	assert.Equal(t, GetLimitSizeForRequestSize("medium"), "large")
-	assert.Equal(t, GetLimitSizeForRequestSize("large"), "x-large")
+	assert.Equal(t, getLimitSizeForRequestSize("small"), "medium")
+	assert.Equal(t, getLimitSizeForRequestSize("medium"), "large")
+	assert.Equal(t, getLimitSizeForRequestSize("large"), "x-large")
 }
 
 func TestGetVolSizeToCapacityMap(t *testing.T) {
-	s := GetVolSizeToCapacityMap()
+	s := getVolSizeToCapacityMap()
 	assert.Equal(t, s["x-small"], "1Gi")
 	assert.Equal(t, s["small"], "2Gi")
 	assert.Equal(t, s["medium"], "3Gi")
@@ -22,7 +22,7 @@ func TestGetVolSizeToCapacityMap(t *testing.T) {
 }
 
 func TestGetCPUSizeToCapacityMap(t *testing.T) {
-	c := GetCPUSizeToCapacityMap()
+	c := getCPUSizeToCapacityMap()
 	assert.Equal(t, c["small"], "600m")
 	assert.Equal(t, c["medium"], "1200m")
 	assert.Equal(t, c["large"], "1800m")
@@ -30,7 +30,7 @@ func TestGetCPUSizeToCapacityMap(t *testing.T) {
 }
 
 func TestGetRAMSizeToCapacityMap(t *testing.T) {
-	r := GetRAMSizeToCapacityMap()
+	r := getRAMSizeToCapacityMap()
 	assert.Equal(t, r["small"], "512Mi")
 	assert.Equal(t, r["medium"], "1Gi")
 	assert.Equal(t, r["large"], "2Gi")
@@ -40,10 +40,10 @@ func TestGetRAMSizeToCapacityMap(t *testing.T) {
 func TestGetDefaultResourceRequirements(t *testing.T) {
 	reqs := GetDefaultResourceRequirements()
 
-	ramSmall := GetRAMSizeToCapacityMap()["small"]
-	cpuSmall := GetCPUSizeToCapacityMap()["small"]
-	ramMed := GetRAMSizeToCapacityMap()["medium"]
-	cpuMed := GetCPUSizeToCapacityMap()["medium"]
+	ramSmall := getRAMSizeToCapacityMap()["small"]
+	cpuSmall := getCPUSizeToCapacityMap()["small"]
+	ramMed := getRAMSizeToCapacityMap()["medium"]
+	cpuMed := getCPUSizeToCapacityMap()["medium"]
 
 	assert.Equal(t, reqs.Limits["memory"], resource.MustParse(ramMed))
 	assert.Equal(t, reqs.Limits["cpu"], resource.MustParse(cpuMed))
@@ -54,10 +54,10 @@ func TestGetDefaultResourceRequirements(t *testing.T) {
 func TestDBDResourceRequirements(t *testing.T) {
 	reqs := GetResourceRequirementsForSize("medium")
 
-	ramLarge := GetRAMSizeToCapacityMap()["large"]
-	cpuLarge := GetCPUSizeToCapacityMap()["large"]
-	ramMed := GetRAMSizeToCapacityMap()["medium"]
-	cpuMed := GetCPUSizeToCapacityMap()["medium"]
+	ramLarge := getRAMSizeToCapacityMap()["large"]
+	cpuLarge := getCPUSizeToCapacityMap()["large"]
+	ramMed := getRAMSizeToCapacityMap()["medium"]
+	cpuMed := getCPUSizeToCapacityMap()["medium"]
 
 	assert.Equal(t, reqs.Limits["memory"], resource.MustParse(ramLarge))
 	assert.Equal(t, reqs.Limits["cpu"], resource.MustParse(cpuLarge))
@@ -67,6 +67,6 @@ func TestDBDResourceRequirements(t *testing.T) {
 
 func TestGetDefaultVolCapacity(t *testing.T) {
 	d := GetDefaultVolCapacity()
-	dd := GetVolSizeToCapacityMap()[DEFAULT_SIZE_VOL]
+	dd := getVolSizeToCapacityMap()[GetDefaultSizeVol()]
 	assert.Equal(t, d, dd)
 }
