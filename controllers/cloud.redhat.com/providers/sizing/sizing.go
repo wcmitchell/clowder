@@ -20,12 +20,17 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-//We need to define default sizes because if an ClowdApp doesn't provide
+//We need to define default sizes because if a ClowdApp doesn't provide
 //volume or ram/cpu capacities we just get an empty string, so we need
 //defaults to plug in there
 const (
-	DEFAULT_SIZE_VOL     string = "x-small"
-	DEFAULT_SIZE_CPU_RAM string = "small"
+	XSMALL               string = "x-small"
+	SMALL                string = "small"
+	MEDIUM               string = "medium"
+	LARGE                string = "large"
+	XLARGE               string = "x-large"
+	DEFAULT_SIZE_VOL     string = XSMALL
+	DEFAULT_SIZE_CPU_RAM string = SMALL
 )
 
 // Public methods
@@ -77,11 +82,11 @@ func GetVolCapacityForSize(size string) string {
 //Sometimes we need to know if one size is larger than another
 func IsCapacityLarger(capacityA string, capacityB string) bool {
 	capacities := map[string]int{
-		"x-small": 0,
-		"small":   1,
-		"medium":  2,
-		"large":   3,
-		"x-large": 4,
+		XSMALL: 0,
+		SMALL:  1,
+		MEDIUM: 2,
+		LARGE:  3,
+		XLARGE: 4,
 	}
 	return capacities[capacityA] > capacities[capacityB]
 }
@@ -91,13 +96,13 @@ func IsCapacityLarger(capacityA string, capacityB string) bool {
 //Get a map of CPU T-Shirt sizes to capacities
 func getCPUSizeToCapacityMap() map[string]string {
 	return map[string]string{
-		"small":  "600m",
-		"medium": "1200m",
-		"large":  "1800m",
+		SMALL:  "600m",
+		MEDIUM: "1200m",
+		LARGE:  "1800m",
 		//Why x-large? For CPU and RAM we have a request and a limit. The limit needs to be
 		//larger than the request. Therefore, if large is requested we need an x-large as a
 		//limit. x-large can't be requested - it isn't part of the config enum valid value set
-		"x-large": "2400m",
+		XLARGE: "2400m",
 	}
 }
 
@@ -105,10 +110,10 @@ func getCPUSizeToCapacityMap() map[string]string {
 //Allows for size to limit mapping without conditionality
 func getLimitSizeForRequestSize(tShirtSize string) string {
 	sizeMap := map[string]string{
-		"x-small": "small",
-		"small":   "medium",
-		"medium":  "large",
-		"large":   "x-large",
+		XSMALL: SMALL,
+		SMALL:  MEDIUM,
+		MEDIUM: LARGE,
+		LARGE:  XLARGE,
 	}
 	return sizeMap[tShirtSize]
 }
@@ -116,10 +121,10 @@ func getLimitSizeForRequestSize(tShirtSize string) string {
 //Get a map of RAM T-Shirt sizes to capacities
 func getRAMSizeToCapacityMap() map[string]string {
 	return map[string]string{
-		"small":   "512Mi",
-		"medium":  "1Gi",
-		"large":   "2Gi",
-		"x-large": "3Gi",
+		SMALL:  "512Mi",
+		MEDIUM: "1Gi",
+		LARGE:  "2Gi",
+		XLARGE: "3Gi",
 	}
 }
 
@@ -129,10 +134,10 @@ func getVolSizeToCapacityMap() map[string]string {
 		//x-small is because volume t shirt sizes pre-exist this implementation and there
 		//we shipped a default smaller than small. I'm just leaving that pattern intact
 		//In real life no one requests x-small, they request "" and get x-small
-		"x-small": "1Gi",
-		"small":   "2Gi",
-		"medium":  "3Gi",
-		"large":   "5Gi",
+		XSMALL: "1Gi",
+		SMALL:  "2Gi",
+		MEDIUM: "3Gi",
+		LARGE:  "5Gi",
 	}
 }
 
