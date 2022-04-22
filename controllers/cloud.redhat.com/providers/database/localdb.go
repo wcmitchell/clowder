@@ -8,6 +8,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/errors"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
@@ -46,7 +47,7 @@ func getDatabaseResourceSizesForApp(app *crd.ClowdApp) core.ResourceRequirements
 	if size == "" {
 		size = "small"
 	}
-	return providers.GetDBResourceRequirements(size)
+	return sizing.GetResourceRequirementsForSize(size)
 }
 
 // CreateDatabase ensures a database is created for the given app.  The
@@ -140,8 +141,7 @@ func (db *localDbProvider) Provide(app *crd.ClowdApp, c *config.AppConfig) error
 			return err
 		}
 
-		volSizes := providers.GetDBVolSizes()
-		volSize := volSizes[app.Spec.Database.DBVolumeSize]
+		volSize := sizing.GetVolCapacityForSize(app.Spec.Database.DBVolumeSize)
 
 		provutils.MakeLocalDBPVC(pvc, nn, app, volSize)
 

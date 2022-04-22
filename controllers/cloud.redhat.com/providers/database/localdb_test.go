@@ -14,6 +14,7 @@ import (
 	crd "github.com/RedHatInsights/clowder/apis/cloud.redhat.com/v1alpha1"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	p "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 	provutils "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/utils"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 )
@@ -52,7 +53,7 @@ func TestLocalDBPVC(t *testing.T) {
 	nn, app := getBaseElements()
 
 	pvc := core.PersistentVolumeClaim{}
-	volSize := p.GetDBDefaultVolSize()
+	volSize := sizing.GetDefaultVolCapacity()
 	provutils.MakeLocalDBPVC(&pvc, nn, &app, volSize)
 
 	if pvc.Name != nn.Name {

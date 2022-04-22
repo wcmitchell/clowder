@@ -16,89 +16,12 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	rc "github.com/RedHatInsights/rhc-osdk-utils/resource_cache"
 )
-
-//For any given size get the next size up
-//Allows for size to limit mapping without conditionality
-func GetLimitForRequestSize(tShirtSize string) string {
-	sizeMap := map[string]string{
-		"small":  "medium",
-		"medium": "large",
-		"large":  "x-large",
-	}
-	return sizeMap[tShirtSize]
-}
-
-//Get a map of DB volume T-Shirt sizes
-func GetDBVolSizes() map[string]string {
-	return map[string]string{
-		//Empty key? Why?! This is here to provide back compat with the prior
-		//implementation, which was "if no key is provided default to a size smaller than small"
-		//Yeah ok but why still use empty? It allows us to reduce conditionality
-		//instead of the go equiv of `key = key == "" ? "default" : key` we just allow key of ""
-		"":       "1Gi",
-		"small":  "2Gi",
-		"medium": "3Gi",
-		"large":  "5Gi",
-	}
-}
-
-//Get a map of DB CPU T-Shirt sizes
-func GetDBCPUSizes() map[string]string {
-	return map[string]string{
-		"small":  "600m",
-		"medium": "1200m",
-		"large":  "1800m",
-		//Uh, what? I though we only shipped small, medium, or large?
-		//Yeah but for resources we need to provide a request and a limit
-		//Limit is always the next size up, which means limit for large
-		//requires an x-large
-		"x-large": "2400m",
-	}
-}
-
-//Get a map of DB RAM T-Shirt sizes
-func GetDBRAMSizes() map[string]string {
-	return map[string]string{
-		"small":   "512Mi",
-		"medium":  "1Gi",
-		"large":   "2Gi",
-		"x-large": "3Gi",
-	}
-}
-
-//Get the default volume size, for use if none is provided
-func GetDBDefaultVolSize() string {
-	return GetDBVolSizes()[""]
-}
-
-func GetDBDefaultResourceRequirements() core.ResourceRequirements {
-	defaultSize := "small"
-	return GetDBResourceRequirements(defaultSize)
-}
-
-//Get the default database resource requirements
-func GetDBResourceRequirements(tShirtSize string) core.ResourceRequirements {
-	cpu := GetDBCPUSizes()
-	ram := GetDBRAMSizes()
-	limitSize := GetLimitForRequestSize(tShirtSize)
-	return core.ResourceRequirements{
-		Limits: core.ResourceList{
-			"memory": resource.MustParse(ram[limitSize]),
-			"cpu":    resource.MustParse(cpu[limitSize]),
-		},
-		Requests: core.ResourceList{
-			"memory": resource.MustParse(ram[tShirtSize]),
-			"cpu":    resource.MustParse(cpu[tShirtSize]),
-		},
-	}
-}
 
 type providerAccessor struct {
 	SetupProvider func(c *Provider) (ClowderProvider, error)

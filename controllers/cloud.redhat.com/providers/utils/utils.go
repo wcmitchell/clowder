@@ -5,6 +5,7 @@ import (
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/config"
 	obj "github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/object"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers"
+	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/providers/sizing"
 	"github.com/RedHatInsights/clowder/controllers/cloud.redhat.com/utils"
 
 	apps "k8s.io/api/apps/v1"
@@ -108,12 +109,9 @@ func MakeLocalDB(dd *apps.Deployment, nn types.NamespacedName, baseResource obj.
 		FailureThreshold:    3,
 	}
 
-	var requestResource core.ResourceRequirements
+	requestResource := sizing.GetDefaultResourceRequirements()
 
-	if res == nil {
-		requestResource = providers.GetDBDefaultResourceRequirements()
-
-	} else {
+	if res != nil {
 		requestResource = *res
 	}
 
