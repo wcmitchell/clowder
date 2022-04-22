@@ -177,7 +177,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 
 		}
 
-		provutils.MakeLocalDBPVC(pvc, nn, p.Env, largestDBVolSize)
+		provutils.MakeLocalDBPVC(pvc, nn, p.Env, sizing.GetVolCapacityForSize(largestDBVolSize))
 
 		if err = p.Cache.Update(SharedDBPVC, pvc); err != nil {
 			return nil, err
