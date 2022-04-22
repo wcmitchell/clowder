@@ -20,15 +20,16 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-//We need to define default sizes because if a ClowdApp doesn't provide
-//volume or ram/cpu capacities we just get an empty string, so we need
-//defaults to plug in there
 const (
-	XSMALL               string = "x-small"
-	SMALL                string = "small"
-	MEDIUM               string = "medium"
-	LARGE                string = "large"
-	XLARGE               string = "x-large"
+	//The nature of the beast in this code is we got a lot of magic strings
+	XSMALL string = "x-small"
+	SMALL  string = "small"
+	MEDIUM string = "medium"
+	LARGE  string = "large"
+	XLARGE string = "x-large"
+	//We need to define default sizes because if a ClowdApp doesn't provide
+	//volume or ram/cpu capacities we just get an empty string, so we need
+	//defaults to plug in there
 	DEFAULT_SIZE_VOL     string = XSMALL
 	DEFAULT_SIZE_CPU_RAM string = SMALL
 )
