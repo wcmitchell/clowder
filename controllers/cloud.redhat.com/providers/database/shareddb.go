@@ -145,13 +145,15 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 		return nil, err
 	}
 
+	defaultVolSize := sizing.GetDefaultSizeVol()
+
 	if p.Env.Spec.Providers.Database.PVC {
 		pvc := &core.PersistentVolumeClaim{}
 		if err := p.Cache.Create(SharedDBPVC, nn, pvc); err != nil {
 			return nil, err
 		}
 
-		largestDBVolSize := sizing.GetDefaultVolSize()
+		largestDBVolSize := defaultVolSize
 
 		appList, err := p.Env.GetAppsInEnv(p.Ctx, p.Client)
 		if err != nil {
@@ -166,7 +168,7 @@ func createVersionedDatabase(p *providers.Provider, version int32) (*config.Data
 			}
 			dbSize := app.Spec.Database.DBVolumeSize
 			if dbSize == "" {
-				dbSize = sizing.GetDefaultVolSize()
+				dbSize = defaultVolSize
 			}
 
 			if sizing.IsCapacityLarger(dbSize, largestDBVolSize) {
