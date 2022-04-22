@@ -151,6 +151,6 @@ func MakeLocalDBService(s *core.Service, nn types.NamespacedName, baseResource o
 }
 
 // MakeLocalDBPVC populates the given PVC object with the local DB struct.
-func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, baseResource obj.ClowdObject, size string) {
-	utils.MakePVC(pvc, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, size, baseResource)
+func MakeLocalDBPVC(pvc *core.PersistentVolumeClaim, nn types.NamespacedName, baseResource obj.ClowdObject, capacity string) {
+	utils.MakePVC(pvc, nn, providers.Labels{"service": "db", "app": baseResource.GetClowdName()}, capacity, baseResource)
 }
