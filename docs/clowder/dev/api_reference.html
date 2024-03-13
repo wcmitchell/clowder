@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Untitled :: Clowder Documentation</title>
     <link rel="canonical" href="https://redhatinsights.github.io/clowder/clowder/dev/api_reference.html">
-    <meta name="generator" content="Antora 3.1.4">
+    <meta name="generator" content="Antora 3.1.7">
     <link rel="stylesheet" href="../../ui/css/site.css">
   </head>
   <body class="article">
@@ -13,7 +13,7 @@
   <nav class="navbar">
     <div class="navbar-brand">
       <a class="navbar-item" href="https://redhatinsights.github.io/clowder">Clowder Documentation</a>
-      <button class="navbar-burger" data-target="topbar-nav">
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
         <span></span>
         <span></span>
         <span></span>
@@ -53,6 +53,7 @@
     <div class="panels">
 <div class="nav-panel-menu is-active" data-panel="menu">
   <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
     <h3 class="title"><a href="index.html">Clowder</a></h3>
 <ul class="nav-list">
   <li class="nav-item" data-depth="0">
@@ -162,7 +163,7 @@
   </div>
   <ul class="components">
     <li class="component is-current">
-      <a class="title" href="index.html">Clowder</a>
+      <div class="title"><a href="index.html">Clowder</a></div>
       <ul class="versions">
         <li class="version is-current is-latest">
           <a href="index.html">dev</a>
@@ -2866,6 +2867,22 @@
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>topicNamespace</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Namespace that kafkaTopics should be written to for (<strong><em>msk</em></strong>) mode.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>clusterAnnotation</code></strong> <em>string</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Cluster annotation identifier for (<strong><em>msk</em></strong>) mode.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p><strong><code>clusterName</code></strong> <em>string</em></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
@@ -2902,6 +2919,14 @@
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>(Deprecated) (Unused)</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>kafkaConnectReplicaCount</code></strong> <em>integer</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Sets the replica count for ephem-msk mode for kafka connect</p>
 </div></div></td>
 </tr>
 </tbody>
@@ -3488,6 +3513,22 @@
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>A pass-through of a list of VolumesMounts in standa k8s format.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>lifecycle</code></strong> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#lifecycle-v1-core">Lifecycle</a></em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>A pass-through of Lifecycle specification in standard k8s format</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>terminationGracePeriodSeconds</code></strong> <em>integer</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>A pass-through of TerminationGracePeriodSeconds specification in standard k8s format default is 30 seconds</p>
 </div></div></td>
 </tr>
 <tr>
@@ -4416,6 +4457,14 @@
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
 <p>Optional keycloak version override&#8201;&#8212;&#8201;used only in (<strong><em>local</em></strong>) mode&#8201;&#8212;&#8201;if not set, a hard-coded default is used.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p><strong><code>keycloakPVC</code></strong> <em>boolean</em></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>Optionally use PVC storage for keycloak db</p>
 </div></div></td>
 </tr>
 <tr>
